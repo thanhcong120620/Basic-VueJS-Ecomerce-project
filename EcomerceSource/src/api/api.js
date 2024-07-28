@@ -10,7 +10,7 @@ const apiClient = axios.create({
 })
 
 export default {
-  getPosts() {
-    return apiClient.get('/posts')
+  getUsers() {
+    return apiClient.get('/users')
   }
 }
