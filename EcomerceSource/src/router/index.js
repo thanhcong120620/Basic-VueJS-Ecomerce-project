@@ -25,6 +25,12 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/Category/AddCategory.vue')
     }
+    // {
+    //   path: '/user/:id',
+    //   name: 'UserDetail',
+    //   component: () => import('@/components/CustomerDetail.vue'),
+    //   props: true
+    // }
   ]
 })
 

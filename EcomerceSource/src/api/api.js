@@ -1,16 +1,9 @@
-import axios from 'axios'
+// src/api/api.js
 
-const apiClient = axios.create({
-  baseURL: 'https://jsonplaceholder.typicode.com',
-  withCredentials: false,
-  headers: {
-    Accept: 'application/json',
-    'Content-Type': 'application/json'
-  }
-})
+import axios from 'axios'
 
 export default {
   getUsers() {
-    return apiClient.get('/users')
+    return axios.get('https://randomuser.me/api?results=50')
   }
 }

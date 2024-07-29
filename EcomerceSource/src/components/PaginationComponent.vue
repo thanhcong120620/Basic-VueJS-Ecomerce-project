@@ -1,15 +1,17 @@
 <template>
   <div class="pagination">
-    <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
+    <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1">Previous</button>
+
     <button
-      v-for="page in totalPages"
+      v-for="page in pages"
       :key="page"
-      @click="goToPage(page)"
       :class="{ active: page === currentPage }"
+      @click="goToPage(page)"
     >
       {{ page }}
     </button>
-    <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
+
+    <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">Next</button>
   </div>
 </template>
 
@@ -25,19 +27,36 @@ export default {
       required: true
     }
   },
+  computed: {
+    pages() {
+      if (this.totalPages <= 6) {
+        return Array.from({ length: this.totalPages }, (_, i) => i + 1)
+      }
+
+      if (this.currentPage <= 3) {
+        return [1, 2, 3, '...', this.totalPages]
+      }
+
+      if (this.currentPage >= this.totalPages - 2) {
+        return [1, '...', this.totalPages - 2, this.totalPages - 1, this.totalPages]
+      }
+
+      return [
+        1,
+        '...',
+        this.currentPage - 1,
+        this.currentPage,
+        this.currentPage + 1,
+        '...',
+        this.totalPages
+      ]
+    }
+  },
   methods: {
-    prevPage() {
-      if (this.currentPage > 1) {
-        this.$emit('updatePage', this.currentPage - 1)
-      }
-    },
-    nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.$emit('updatePage', this.currentPage + 1)
-      }
-    },
     goToPage(page) {
-      this.$emit('updatePage', page)
+      if (page !== '...' && page > 0 && page <= this.totalPages) {
+        this.$emit('updatePage', page)
+      }
     }
   }
 }
@@ -47,22 +66,22 @@ export default {
 .pagination {
   display: flex;
   justify-content: center;
-  margin: 16px 0;
+  align-items: center;
+  margin: 20px 0;
 }
 .pagination button {
-  margin: 0 4px;
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #f5f5f5;
+  margin: 0 2px;
+  padding: 10px;
+  border: none;
+  background-color: #f1f1f1;
+  cursor: pointer;
 }
 .pagination button.active {
-  background: #007bff;
+  background-color: #4caf50;
   color: white;
-  border-color: #007bff;
 }
 .pagination button:disabled {
-  background: #e0e0e0;
+  background-color: #ccc;
   cursor: not-allowed;
 }
 </style>

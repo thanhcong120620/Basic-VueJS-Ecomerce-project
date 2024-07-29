@@ -4,31 +4,29 @@
     <table class="user-table">
       <thead>
         <tr>
-          <th>STT</th>
-          <th>Khách hàng</th>
-          <th>Tên</th>
+          <th>ID</th>
+          <th>Tên KH</th>
+          <th>Phone</th>
           <th>Email</th>
-          <th>Địa chỉ</th>
-          <th>Số điện thoại</th>
-          <th>NV tư vấn</th>
-          <th>Mô tả</th>
-          <th></th>
+          <th>Age</th>
+          <th>Tình trạng</th>
+          <th>DOB</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(user, index) in paginatedUsers" :key="user.id">
-          <td>{{ index + 1 + (currentPage - 1) * usersPerPage }}</td>
-          <td><img :src="getUserAvatarUrl(user.email)" alt="User Avatar" class="user-avatar" /></td>
-          <td>{{ user.name }}</td>
+        <tr
+          v-for="(user, index) in paginatedUsers"
+          :key="user.login.uuid"
+          @click="goToUserDetail(user.login.uuid)"
+          style="cursor: pointer"
+        >
+          <td>{{ (currentPage - 1) * usersPerPage + index + 1 }}</td>
+          <td>{{ user.name.first }}</td>
+          <td>{{ user.name.last }}</td>
           <td>{{ user.email }}</td>
-          <td>{{ user.address.street }}</td>
+          <td>{{ user.dob.age }}</td>
           <td>{{ user.phone }}</td>
-          <td>{{ user.username }}</td>
-          <td>{{ user.address.zipcode }}</td>
-          <td>
-            <button @click="editUser(user.id)">✏️</button>
-            <button @click="deleteUser(user.id)">🗑️</button>
-          </td>
+          <td>{{ formatDate(user.dob.date) }}</td>
         </tr>
       </tbody>
     </table>
@@ -65,26 +63,23 @@ export default {
     api
       .getUsers()
       .then((response) => {
-        this.users = response.data
+        this.users = response.data.results
+        console.log(this.users) // Kiểm tra dữ liệu người dùng
       })
       .catch((error) => {
         console.error('Error fetching user data:', error)
       })
   },
   methods: {
-    getUserAvatarUrl(email) {
-      return `https://robohash.org/${email}.png?size=200x200`
-    },
     updatePage(page) {
       this.currentPage = page
     },
-    editUser(userId) {
-      console.log(`Edit user with ID: ${userId}`)
-      // Add your edit logic here
+    formatDate(dateString) {
+      const date = new Date(dateString)
+      return date.toLocaleDateString()
     },
-    deleteUser(userId) {
-      console.log(`Delete user with ID: ${userId}`)
-      // Add your delete logic here
+    goToUserDetail(userId) {
+      this.$router.push({ name: 'UserDetail', params: { id: userId } })
     }
   }
 }
@@ -94,27 +89,16 @@ export default {
 .user-table {
   width: 100%;
   border-collapse: collapse;
-  margin: 16px 0;
+  margin: 20px 0;
 }
-
-.user-table thead {
-  color: black;
-}
-
 .user-table th,
 .user-table td {
-  border: 1px solid #ccc;
+  border: 1px solid #ddd;
   padding: 8px;
   text-align: left;
 }
-
 .user-table th {
-  background-color: #f4f4f4;
-}
-
-.user-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
+  background-color: #4caf50;
+  color: white;
 }
 </style>
