@@ -2,12 +2,45 @@
   <div>
     <h1>User Detail</h1>
     <div v-if="customer">
-      <p><strong>Name:</strong> {{ customer.name.first }} {{ customer.name.last }}</p>
-      <p><strong>Email:</strong> {{ customer.email }}</p>
-      <p><strong>Age:</strong> {{ customer.dob.age }}</p>
-      <p><strong>Contact Number:</strong> {{ customer.phone }}</p>
-
-      <td>{{ formatDate(customer.dob.date) }}</td>
+      <div v-if="isEditing">
+        <form @submit.prevent="saveEdits">
+          <p>
+            <strong>First Name:</strong>
+            <input v-model="customer.name.first" />
+          </p>
+          <p>
+            <strong>Last Name:</strong>
+            <input v-model="customer.name.last" />
+          </p>
+          <p>
+            <strong>Email:</strong>
+            <input v-model="customer.email" />
+          </p>
+          <p>
+            <strong>Age:</strong>
+            <input v-model="customer.dob.age" />
+          </p>
+          <p>
+            <strong>Contact Number:</strong>
+            <input v-model="customer.phone" />
+          </p>
+          <p>
+            <strong>DOB:</strong>
+            <input v-model="customer.dob.date" />
+          </p>
+          <button type="submit">Save</button>
+          <button @click="cancelEdits">Cancel</button>
+        </form>
+      </div>
+      <div v-else>
+        <p><strong>Name:</strong> {{ customer.name.first }} {{ customer.name.last }}</p>
+        <p><strong>Email:</strong> {{ customer.email }}</p>
+        <p><strong>Age:</strong> {{ customer.dob.age }}</p>
+        <p><strong>Contact Number:</strong> {{ customer.phone }}</p>
+        <p><strong>DOB:</strong> {{ formatDate(customer.dob.date) }}</p>
+        <button @click="startEditing">Edit</button>
+        <button @click="deleteCustomer">Delete</button>
+      </div>
     </div>
     <div v-else>
       <p>Loading user details...</p>
@@ -28,7 +61,9 @@ export default {
   },
   data() {
     return {
-      customer: null
+      customer: null,
+      isEditing: false,
+      originalCustomer: null
     }
   },
   async created() {
@@ -37,6 +72,7 @@ export default {
       await store.fetchCustomers()
     }
     this.customer = store.getCustomerById(this.id)
+    this.originalCustomer = { ...this.customer }
   },
   methods: {
     formatDate(dateString) {
@@ -44,6 +80,24 @@ export default {
       return new Date(dateString).toLocaleDateString(undefined, options)
     },
     goBack() {
+      this.$router.push('/admin/category/add') // điều hướng về trang danh sách khách hàng
+    },
+    startEditing() {
+      this.isEditing = true
+    },
+    cancelEdits() {
+      this.customer = { ...this.originalCustomer }
+      this.isEditing = false
+    },
+    async saveEdits() {
+      const store = useCustomerStore()
+      await store.updateCustomer(this.customer)
+      this.isEditing = false
+      this.originalCustomer = { ...this.customer }
+    },
+    async deleteCustomer() {
+      const store = useCustomerStore()
+      await store.deleteCustomer(this.id)
       this.$router.push('/admin/category/add') // điều hướng về trang danh sách khách hàng
     }
   }
