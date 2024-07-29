@@ -21,8 +21,8 @@
           style="cursor: pointer"
         >
           <td>{{ (currentPage - 1) * usersPerPage + index + 1 }}</td>
-          <td>{{ user.name.first }}</td>
-          <td>{{ user.name.last }}</td>
+          <td>{{ user.name.first }} {{ user.name.last }}</td>
+          <td>{{ user.phone }}</td>
           <td>{{ user.email }}</td>
           <td>{{ user.dob.age }}</td>
           <td>{{ user.phone }}</td>
@@ -35,51 +35,61 @@
 </template>
 
 <script>
-import api from '@/api/api'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useCustomerStore } from '@/stores/customer'
 import Pagination from '@/components/PaginationComponent.vue'
+
+// console.log('>>> useCustomerStore: ' + useCustomerStore)
 
 export default {
   components: {
     Pagination
   },
-  data() {
-    return {
-      users: [],
-      currentPage: 1,
-      usersPerPage: 5
-    }
-  },
-  computed: {
-    totalPages() {
-      return Math.ceil(this.users.length / this.usersPerPage)
-    },
-    paginatedUsers() {
-      const start = (this.currentPage - 1) * this.usersPerPage
-      const end = start + this.usersPerPage
-      return this.users.slice(start, end)
-    }
-  },
-  created() {
-    api
-      .getUsers()
-      .then((response) => {
-        this.users = response.data.results
-        console.log(this.users) // Kiểm tra dữ liệu người dùng
-      })
-      .catch((error) => {
+  setup() {
+    const customerStore = useCustomerStore()
+    const router = useRouter()
+    const currentPage = ref(1)
+    const usersPerPage = ref(5)
+
+    const totalPages = computed(() => {
+      return Math.ceil(customerStore.customers.length / usersPerPage.value)
+    })
+
+    const paginatedUsers = computed(() => {
+      const start = (currentPage.value - 1) * usersPerPage.value
+      const end = start + usersPerPage.value
+      return customerStore.customers.slice(start, end)
+    })
+
+    const fetchUsers = async () => {
+      try {
+        await customerStore.fetchCustomers()
+      } catch (error) {
         console.error('Error fetching user data:', error)
-      })
-  },
-  methods: {
-    updatePage(page) {
-      this.currentPage = page
-    },
-    formatDate(dateString) {
+      }
+    }
+
+    const formatDate = (dateString) => {
       const date = new Date(dateString)
       return date.toLocaleDateString()
-    },
-    goToUserDetail(userId) {
-      this.$router.push({ name: 'UserDetail', params: { id: userId } })
+    }
+
+    const goToUserDetail = (userId) => {
+      console.log('userId:', userId)
+      router.push({ name: 'UserDetail', params: { id: userId } })
+    }
+
+    onMounted(fetchUsers)
+
+    return {
+      currentPage,
+      usersPerPage,
+      totalPages,
+      paginatedUsers,
+      updatePage: (page) => (currentPage.value = page),
+      formatDate,
+      goToUserDetail
     }
   }
 }

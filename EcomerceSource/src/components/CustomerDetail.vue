@@ -1,34 +1,50 @@
-<!-- src/components/UserDetail.vue -->
 <template>
   <div>
     <h1>User Detail</h1>
-    <p><strong>First Name:</strong> {{ user.name.first }}</p>
-    <p><strong>Last Name:</strong> {{ user.name.last }}</p>
-    <p><strong>Email:</strong> {{ user.email }}</p>
-    <p><strong>Age:</strong> {{ user.dob.age }}</p>
-    <p><strong>Phone:</strong> {{ user.phone }}</p>
-    <p><strong>DOB:</strong> {{ formatDate(user.dob.date) }}</p>
+    <div v-if="customer">
+      <p><strong>Name:</strong> {{ customer.name.first }} {{ customer.name.last }}</p>
+      <p><strong>Email:</strong> {{ customer.email }}</p>
+      <p><strong>Age:</strong> {{ customer.dob.age }}</p>
+      <p><strong>Contact Number:</strong> {{ customer.phone }}</p>
+
+      <td>{{ formatDate(customer.dob.date) }}</td>
+    </div>
+    <div v-else>
+      <p>Loading user details...</p>
+    </div>
+    <button @click="goBack">Back</button>
   </div>
 </template>
 
 <script>
+import { useCustomerStore } from '@/stores/customer'
+
 export default {
-  props: ['id'],
-  data() {
-    return {
-      user: null
+  props: {
+    id: {
+      type: String,
+      required: true
     }
   },
-  created() {
-    // Fetch user details based on ID
-    // This assumes that the `id` prop is the index in the array
-    // You may need to change this depending on your actual ID
-    this.user = this.$root.$data.users.find((u) => u.login.uuid === this.id)
+  data() {
+    return {
+      customer: null
+    }
+  },
+  async created() {
+    const store = useCustomerStore()
+    if (!store.customers.length) {
+      await store.fetchCustomers()
+    }
+    this.customer = store.getCustomerById(this.id)
   },
   methods: {
     formatDate(dateString) {
       const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
       return new Date(dateString).toLocaleDateString(undefined, options)
+    },
+    goBack() {
+      this.$router.push('/admin/category/add') // điều hướng về trang danh sách khách hàng
     }
   }
 }
