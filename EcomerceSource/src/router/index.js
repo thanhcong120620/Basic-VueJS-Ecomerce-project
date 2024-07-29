@@ -30,6 +30,11 @@ const router = createRouter({
       name: 'UserDetail',
       component: () => import('@/components/CustomerDetail.vue'),
       props: true
+    },
+    {
+      path: '/swagger-panel',
+      name: 'SwaggerPanel',
+      component: () => import('@/components/SwaggerUiCustom.vue')
     }
   ]
 })

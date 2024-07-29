@@ -15,49 +15,47 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    currentPage: {
-      type: Number,
-      required: true
-    },
-    totalPages: {
-      type: Number,
-      required: true
-    }
+<script setup>
+import { computed, defineProps, defineEmits } from 'vue'
+
+// Định nghĩa các props
+const props = defineProps({
+  currentPage: {
+    type: Number,
+    required: true
   },
-  computed: {
-    pages() {
-      if (this.totalPages <= 6) {
-        return Array.from({ length: this.totalPages }, (_, i) => i + 1)
-      }
+  totalPages: {
+    type: Number,
+    required: true
+  }
+})
 
-      if (this.currentPage <= 3) {
-        return [1, 2, 3, '...', this.totalPages]
-      }
+// Định nghĩa các sự kiện emit
+const emit = defineEmits(['updatePage'])
 
-      if (this.currentPage >= this.totalPages - 2) {
-        return [1, '...', this.totalPages - 2, this.totalPages - 1, this.totalPages]
-      }
+// Tính toán các trang
+const pages = computed(() => {
+  const { currentPage, totalPages } = props
 
-      return [
-        1,
-        '...',
-        this.currentPage - 1,
-        this.currentPage,
-        this.currentPage + 1,
-        '...',
-        this.totalPages
-      ]
-    }
-  },
-  methods: {
-    goToPage(page) {
-      if (page !== '...' && page > 0 && page <= this.totalPages) {
-        this.$emit('updatePage', page)
-      }
-    }
+  if (totalPages <= 6) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1)
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, '...', totalPages]
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [1, '...', totalPages - 2, totalPages - 1, totalPages]
+  }
+
+  return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages]
+})
+
+// Hàm để chuyển đến trang mới
+const goToPage = (page) => {
+  if (page !== '...' && page > 0 && page <= props.totalPages) {
+    emit('updatePage', page)
   }
 }
 </script>

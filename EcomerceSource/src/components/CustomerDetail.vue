@@ -55,8 +55,9 @@
 </template>
 
 <script>
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCustomerStore } from '@/stores/customer'
-// import { useRouter } from 'vue-router'
 
 export default {
   props: {
@@ -65,55 +66,71 @@ export default {
       required: true
     }
   },
-  data() {
-    return {
-      customer: null,
-      editing: false,
-      editableCustomer: {}
-    }
-  },
-  async created() {
+  setup(props) {
+    const router = useRouter()
     const store = useCustomerStore()
-    if (!store.customers.length) {
-      await store.fetchCustomers()
-    }
-    this.customer = store.getCustomerById(this.id)
-    this.editableCustomer = { ...this.customer }
-  },
-  methods: {
-    formatDate(dateString) {
+    const customer = ref(null)
+    const editing = ref(false)
+    const editableCustomer = reactive({})
+
+    const formatDate = (dateString) => {
       const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
       return new Date(dateString).toLocaleDateString(undefined, options)
-    },
-    goBack() {
-      this.$router.push('/admin/category/add')
-    },
-    startEditing() {
-      this.editing = true
-    },
-    cancelEditing() {
-      this.editing = false
-      this.editableCustomer = { ...this.customer }
-    },
-    async saveEdits() {
+    }
+
+    const goBack = () => {
+      router.push('/admin/category/add')
+    }
+
+    const startEditing = () => {
+      editing.value = true
+    }
+
+    const cancelEditing = () => {
+      editing.value = false
+      Object.assign(editableCustomer, customer.value)
+    }
+
+    const saveEdits = async () => {
       if (confirm('Are you sure you want to save the changes?')) {
-        const store = useCustomerStore()
-        await store.updateCustomer(this.editableCustomer)
+        await store.updateCustomer(editableCustomer)
         alert('User updated successfully.')
-        this.customer = { ...this.editableCustomer }
-        this.editing = false
+        Object.assign(customer.value, editableCustomer)
+        editing.value = false
       }
-    },
-    confirmDelete() {
+    }
+
+    const confirmDelete = () => {
       if (confirm('Are you sure you want to delete this user?')) {
-        this.deleteCustomer()
+        deleteCustomer()
       }
-    },
-    async deleteCustomer() {
-      const store = useCustomerStore()
-      await store.deleteCustomer(this.customer.login.uuid)
+    }
+
+    const deleteCustomer = async () => {
+      await store.deleteCustomer(customer.value.login.uuid)
       alert('User deleted successfully.')
-      this.goBack()
+      goBack()
+    }
+
+    onMounted(async () => {
+      if (!store.customers.length) {
+        await store.fetchCustomers()
+      }
+      customer.value = store.getCustomerById(props.id)
+      Object.assign(editableCustomer, customer.value)
+    })
+
+    return {
+      customer,
+      editing,
+      editableCustomer,
+      formatDate,
+      goBack,
+      startEditing,
+      cancelEditing,
+      saveEdits,
+      confirmDelete,
+      deleteCustomer
     }
   }
 }

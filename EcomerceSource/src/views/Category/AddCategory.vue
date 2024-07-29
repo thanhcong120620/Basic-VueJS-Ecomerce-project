@@ -40,8 +40,6 @@ import { useRouter } from 'vue-router'
 import { useCustomerStore } from '@/stores/customer'
 import Pagination from '@/components/PaginationComponent.vue'
 
-// console.log('>>> useCustomerStore: ' + useCustomerStore)
-
 export default {
   components: {
     Pagination
@@ -80,6 +78,10 @@ export default {
       router.push({ name: 'UserDetail', params: { id: userId } })
     }
 
+    const updatePage = (page) => {
+      currentPage.value = page
+    }
+
     onMounted(fetchUsers)
 
     return {
@@ -87,7 +89,7 @@ export default {
       usersPerPage,
       totalPages,
       paginatedUsers,
-      updatePage: (page) => (currentPage.value = page),
+      updatePage,
       formatDate,
       goToUserDetail
     }
